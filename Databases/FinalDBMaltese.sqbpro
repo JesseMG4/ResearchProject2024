@@ -1,0 +1,159 @@
+
+SELECT COUNT(DISTINCT pages.website_id)
+FROM scripts
+JOIN pages ON scripts.page_id = pages.id
+WHERE scripts.Library LIKE '%webpack%';
+
+--Number of Websites Using One of the 10 JavaScript Libraries
+SELECT COUNT(DISTINCT pages.website_id)
+FROM scripts
+JOIN pages ON scripts.page_id = pages.id
+WHERE scripts.Library IN (SELECT DISTINCT Library from scripts where Library not like 'webpack');
+
+--Most Used Library
+SELECT scripts.Library, COUNT(DISTINCT pages.website_id) AS count
+FROM scripts
+JOIN pages ON scripts.page_id = pages.id
+GROUP BY scripts.Library
+ORDER BY count DESC
+LIMIT 1;
+
+-- Number of Vulnerable Websites and Level of Vulnerability
+SELECT 
+  COUNT(DISTINCT pages.website_id) FILTER (WHERE JSLibraryVersionVulnerabilities.critical_vulnerabilities ) as critical,
+  COUNT(DISTINCT pages.website_id) FILTER (WHERE JSLibraryVersionVulnerabilities.high_vulnerabilities ) as high,
+  COUNT(DISTINCT pages.website_id) FILTER (WHERE JSLibraryVersionVulnerabilities.medium_vulnerabilities ) as medium,
+  COUNT(DISTINCT pages.website_id) FILTER (WHERE JSLibraryVersionVulnerabilities.low_vulnerabilities &gt; 0) as low
+FROM JSLibraryVersionVulnerabilities
+JOIN scripts ON scripts.Library = JSLibraryVersionVulnerabilities.library_name AND scripts.version = JSLibraryVersionVulnerabilities.version
+JOIN pages ON scripts.page_id = pages.id;
+
+--Best Detection Method
+SELECT scripts.JSTypeHow, COUNT(DISTINCT pages.website_id) AS count
+FROM scripts
+JOIN pages ON scripts.page_id = pages.id
+GROUP BY scripts.JSTypeHow
+ORDER BY count DESC;
+
+BEGIN TRANSACTION;
+UPDATE scripts
+SET Library = 
+    CASE
+        WHEN LOWER(Library) LIKE 'jquery%' THEN 'jquery'
+        WHEN LOWER(Library) LIKE 'webpack%' THEN 'webpack'
+        WHEN LOWER(Library) LIKE 'react%' THEN 'react'
+        WHEN LOWER(Library) LIKE 'angular%' THEN 'angular'
+        WHEN LOWER(Library) LIKE 'vue%' THEN 'vue'
+        WHEN LOWER(Library) LIKE 'd3%' THEN 'd3'
+        WHEN LOWER(Library) LIKE 'dojo%' THEN 'dojo'
+        WHEN LOWER(Library) LIKE 'velocity%' THEN 'velocity'
+        WHEN LOWER(Library) LIKE 'three%' THEN 'three'
+        WHEN LOWER(Library) LIKE 'ember%' THEN 'ember'
+        -- Add more conditions for other libraries as needed
+        ELSE Library
+    END
+WHERE Library IS NOT NULL AND Library &lt;&gt; '';
+COMMIT;
+select DISTINCT Library from scripts
+-- Number of Websites with Each Level of Vulnerability
+SELECT 
+  COUNT(DISTINCT pages.website_id) AS websites,
+  CASE 
+    WHEN JSLibraryVersionVulnerabilities.critical_vulnerabilities > 0 THEN 'Critical'
+    WHEN JSLibraryVersionVulnerabilities.high_vulnerabilities > 0 THEN 'High'
+    WHEN JSLibraryVersionVulnerabilities.medium_vulnerabilities > 0 THEN 'Medium'
+    WHEN JSLibraryVersionVulnerabilities.low_vulnerabilities > 0 THEN 'Low'
+    ELSE 'No Vulnerability'
+  END AS vulnerability_level
+FROM JSLibraryVersionVulnerabilities
+JOIN scripts ON scripts.Library like JSLibraryVersionVulnerabilities.library_name AND scripts.version = JSLibraryVersionVulnerabilities.version
+JOIN pages ON scripts.page_id = pages.id
+GROUP BY vulnerability_level;
+
+-- List All Detected Libraries
+SELECT DISTINCT Library
+FROM scripts
+WHERE Library IS NOT NULL AND Library <> '';
+
+SELECT scripts.JSTypeHow, COUNT(DISTINCT pages.website_id) AS count
+FROM scripts
+JOIN pages ON scripts.page_id = pages.id
+GROUP BY scripts.JSTypeHow
+ORDER BY count DESC;
+
+-- Number of Libraries Detected by Dynamic Analysis
+SELECT COUNT(DISTINCT pages.website_id)
+FROM scripts
+JOIN pages ON scripts.page_id = pages.id
+WHERE scripts.JSTypeHow = 'execute script';
+
+-- Number of Libraries Detected by Dynamic Analysis
+SELECT COUNT(DISTINCT pages.website_id)
+FROM scripts
+JOIN pages ON scripts.page_id = pages.id
+WHERE scripts.JSTypeHow = 'execute script';
+
+-- Number of Libraries Detected by Dynamic Analysis
+SELECT COUNT(DISTINCT pages.website_id)
+FROM scripts
+JOIN pages ON scripts.page_id = pages.id
+WHERE scripts.JSTypeHow = 'execute script';
+
+-- Number of Libraries Detected by Static Analysis
+SELECT COUNT(DISTINCT pages.website_id)
+FROM scripts
+JOIN pages ON scripts.page_id = pages.id
+WHERE scripts.JSTypeHow IN ('known pattern', 'known filename');
+
+-- Update Website Status Based on Detection
+UPDATE websites
+SET Status = 'Done'
+WHERE id IN (
+    SELECT DISTINCT pages.website_id
+    FROM pages
+    JOIN scripts ON pages.id = scripts.page_id
+);
+
+-- Generate Detailed Reports for Each Website
+SELECT websites.Domain, pages.url, scripts.Library, scripts.version, 
+       JSLibraryVersionVulnerabilities.critical_vulnerabilities,
+       JSLibraryVersionVulnerabilities.high_vulnerabilities,
+       JSLibraryVersionVulnerabilities.medium_vulnerabilities,
+       JSLibraryVersionVulnerabilities.low_vulnerabilities
+FROM websites
+JOIN pages ON websites.id = pages.website_id
+JOIN scripts ON pages.id = scripts.page_id
+JOIN JSLibraryVersionVulnerabilities ON scripts.Library = JSLibraryVersionVulnerabilities.library_name AND scripts.version = JSLibraryVersionVulnerabilities.version
+ORDER BY websites.Domain;
+
+-- Check for New Vulnerabilities
+SELECT scripts.Library, scripts.version
+FROM scripts
+LEFT JOIN JSLibraryVersionVulnerabilities ON scripts.Library = JSLibraryVersionVulnerabilities.library_name AND scripts.version = JSLibraryVersionVulnerabilities.version
+WHERE JSLibraryVersionVulnerabilities.library_name IS NULL
+GROUP BY scripts.Library, scripts.version;
+
+-- Count of Websites Using Each Library
+SELECT scripts.Library, COUNT(DISTINCT pages.website_id) AS count
+FROM scripts
+JOIN pages ON scripts.page_id = pages.id
+GROUP BY scripts.Library
+ORDER BY count DESC;
+
+SELECT 
+    scripts.Library, 
+    scripts.version, 
+    COUNT(DISTINCT pages.website_id) AS count, 
+    JSLibraryVersionVulnerabilities.vulnerable
+FROM 
+    scripts
+JOIN 
+    pages ON scripts.page_id = pages.id
+JOIN 
+    JSLibraryVersionVulnerabilities 
+    ON scripts.Library = JSLibraryVersionVulnerabilities.library 
+    AND scripts.version = JSLibraryVersionVulnerabilities.version
+GROUP BY 
+    scripts.Library, scripts.version, JSLibraryVersionVulnerabilities.vulnerable;
+
+

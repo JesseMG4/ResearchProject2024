@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="C:/Users/mical/Documents/GitHub/ThesesJesseMicallef2023/Project/FinalDB.db" readonly="0" foreign_keys="1" case_sensitive_like="0" temp_store="0" wal_autocheckpoint="1000" synchronous="2"/><attached/><window><main_tabs open="structure browser pragmas query" current="3"/></window><tab_structure><column_width id="0" width="300"/><column_width id="1" width="0"/><column_width id="2" width="100"/><column_width id="3" width="1272"/><column_width id="4" width="0"/><expanded_item id="0" parent="1"/><expanded_item id="1" parent="1"/><expanded_item id="2" parent="1"/><expanded_item id="3" parent="1"/></tab_structure><tab_browse><current_table name="4,31:mainJSLibraryVersionVulnerabilities"/><default_encoding codec=""/><browse_table_settings><table schema="main" name="JSLibraryVersionVulnerabilities" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_"><sort><column index="2" mode="0"/></sort><column_widths><column index="1" value="93"/><column index="2" value="244"/><column index="3" value="128"/><column index="4" value="155"/><column index="5" value="133"/><column index="6" value="149"/></column_widths><filter_values><column index="2" value="1.8.0"/></filter_values><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="scripts" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_"><sort/><column_widths><column index="1" value="40"/><column index="2" value="59"/><column index="3" value="96"/><column index="4" value="97"/><column index="5" value="57"/><column index="6" value="300"/></column_widths><filter_values><column index="4" value="known"/></filter_values><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table></browse_table_settings></tab_browse><tab_sql><sql name="ThesesImp.sql">select status ,count(*) from websites group by status
+select status ,count(*) from pages group by status
+select JSTypeHow ,count(*) from scripts group by JSTypeHow
+select JSTypeWhere ,count(*) from scripts group by JSTypeWhere
+select Library ,version ,count(*) from scripts group by Library ,version
+select Library ,count(*) from scripts group by Library
+
+
+
+select * from websites
+SELECT * from pages
+SELECT * from scripts
+SELECT * from JSLibraryVersionVulnerabilities
+
+SELECT DISTINCT Domain,p. FROM websites w join pages p on w.id = p.website_id JOIN scripts s on s.page_id = p.id WHERE Library not like 'Webpack' and p.id
+select * from pages
+SELECT * from scripts
+select* from websites
+select* from JSLibraryVersionVulnerabilities
+
+select DISTINCT w.Domain, Library,version,JSTypeHow,JSTypeWhere from pages p join scripts s on p.id = s.page_id JOIN websites w on w.id = p.website_id WHERE version not like 'Unknown' order by website_id
+select w.Domain, Library,version,JSTypeHow,JSTypeWhere, count(Library) from pages p join scripts s on p.id = s.page_id JOIN websites w on w.id = p.website_id WHERE version not like 'Unknown' group by website_id order by website_id
+SELECT *  from pages p join scripts s on p.id = s.page_id JOIN websites w on w.id = p.website_id
+
+SELECT 
+  w.Domain,
+  s.JSTypeHow,
+  s.JSTypeWhere,
+  count(jvl.critical_vulnerabilities) AS total_critical_vulnerabilities,
+  count(jvl.high_vulnerabilities) AS total_high_vulnerabilities,
+  count(jvl.medium_vulnerabilities) AS total_medium_vulnerabilities,
+  count(jvl.low_vulnerabilities) AS total_low_vulnerabilities
+FROM websites w
+JOIN pages p ON w.id = p.website_id
+JOIN scripts s ON p.id = s.page_id
+JOIN JSLibraryVersionVulnerabilities jvl ON s.Library like jvl.library_name AND s.version = jvl.version
+GROUP BY w.Domain
+
+SELECT 
+	w.Domain,
+	count(jvl.critical_vulnerabilities) AS total_critical_vulnerabilities,
+	count(jvl.high_vulnerabilities) AS total_high_vulnerabilities,
+	count(jvl.medium_vulnerabilities) AS total_medium_vulnerabilities,
+	count(jvl.low_vulnerabilities) AS total_low_vulnerabilities
+FROM websites w
+JOIN pages p ON w.id = p.website_id
+JOIN scripts s ON p.id = s.page_id
+JOIN JSLibraryVersionVulnerabilities jvl ON s.Library like jvl.library_name AND s.version = jvl.version 
+GROUP BY w.Domain
+
+SELECT 
+    w.Domain,
+    SUM(jv.low_vulnerabilities) AS Low,
+    SUM(jv.medium_vulnerabilities) AS Medium,
+    SUM(jv.high_vulnerabilities) AS High,
+    SUM(jv.critical_vulnerabilities) AS Critical
+FROM 
+    websites w
+JOIN 
+    pages p ON w.id = p.website_id
+JOIN 
+    scripts s ON p.id = s.page_id
+JOIN 
+    JSLibraryVersionVulnerabilities jv ON s.Library LIKE jv.library_name AND s.version LIKE jv.version
+GROUP BY 
+    w.Domain;
+	
+	
+
+SELECT 
+    w.Domain,
+    SUM(jv.low_vulnerabilities) AS Low,
+    SUM(jv.medium_vulnerabilities) AS Medium,
+    SUM(jv.high_vulnerabilities) AS High,
+    SUM(jv.critical_vulnerabilities) AS Critical
+FROM 
+    websites w
+JOIN 
+    pages p ON w.id = p.website_id
+JOIN 
+    scripts s ON p.id = s.page_id
+JOIN 
+    JSLibraryVersionVulnerabilities jv ON s.Library LIKE jv.library_name AND s.version LIKE jv.version
+GROUP BY 
+    w.Domain
+HAVING 
+    SUM(jv.low_vulnerabilities) + SUM(jv.medium_vulnerabilities) + SUM(jv.high_vulnerabilities) + SUM(jv.critical_vulnerabilities) &gt; 0;
+
+SELECT 
+COUNT(DISTINCT w.Domain) AS Websites_With_Low_Vulnerabilities
+FROM 
+    websites w
+JOIN 
+    pages p ON w.id = p.website_id
+JOIN 
+    scripts s ON p.id = s.page_id
+JOIN 
+    JSLibraryVersionVulnerabilities jv ON s.Library LIKE jv.library_name AND s.version LIKE jv.version
+WHERE 
+    jv.low_vulnerabilities &gt; 0;
+	
+SELECT 
+    COUNT(DISTINCT w.Domain) AS Websites_With_Medium_Vulnerabilities
+FROM 
+    websites w
+JOIN 
+    pages p ON w.id = p.website_id
+JOIN 
+    scripts s ON p.id = s.page_id
+JOIN 
+    JSLibraryVersionVulnerabilities jv ON s.Library LIKE jv.library_name AND s.version LIKE jv.version
+WHERE 
+    jv.medium_vulnerabilities &gt; 0;
+
+SELECT 
+    COUNT(DISTINCT w.Domain) AS Websites_With_High_Vulnerabilities
+FROM 
+    websites w
+JOIN 
+    pages p ON w.id = p.website_id
+JOIN 
+    scripts s ON p.id = s.page_id
+JOIN 
+    JSLibraryVersionVulnerabilities jv ON s.Library LIKE jv.library_name AND s.version LIKE jv.version
+WHERE 
+    jv.high_vulnerabilities &gt; 0;
+
+SELECT 
+    COUNT(DISTINCT w.Domain) AS Websites_With_Critical_Vulnerabilities
+FROM 
+    websites w
+JOIN 
+    pages p ON w.id = p.website_id
+JOIN 
+    scripts s ON p.id = s.page_id
+JOIN 
+    JSLibraryVersionVulnerabilities jv ON s.Library LIKE jv.library_name AND s.version LIKE jv.version
+WHERE 
+    jv.critical_vulnerabilities &gt; 0;
+	
+
+
+</sql><sql name="ThesesResults.sql">SELECT COUNT(DISTINCT pages.website_id)
+FROM scripts
+JOIN pages ON scripts.page_id = pages.id
+WHERE scripts.Library LIKE '%webpack%';
+
+SELECT COUNT(DISTINCT pages.website_id)
+FROM scripts
+JOIN pages ON scripts.page_id = pages.id
+WHERE scripts.Library IN (SELECT DISTINCT Library from scripts where Library not like'webpack');
+
+
+SELECT scripts.Library, COUNT(DISTINCT pages.website_id) AS count
+FROM scripts
+JOIN pages ON scripts.page_id = pages.id
+GROUP BY scripts.Library
+ORDER BY count DESC
+LIMIT 1;
+
+SELECT 
+  COUNT(DISTINCT pages.website_id) FILTER (WHERE JSLibraryVersionVulnerabilities.critical_vulnerabilities &gt; 0) as critical,
+  COUNT(DISTINCT pages.website_id) FILTER (WHERE JSLibraryVersionVulnerabilities.high_vulnerabilities &gt; 0) as high,
+  COUNT(DISTINCT pages.website_id) FILTER (WHERE JSLibraryVersionVulnerabilities.medium_vulnerabilities &gt; 0) as medium,
+  COUNT(DISTINCT pages.website_id) FILTER (WHERE JSLibraryVersionVulnerabilities.low_vulnerabilities &gt; 0) as low
+FROM JSLibraryVersionVulnerabilities
+JOIN scripts ON scripts.Library = JSLibraryVersionVulnerabilities.library_name AND scripts.version = JSLibraryVersionVulnerabilities.version
+JOIN pages ON scripts.page_id = pages.id;
+
+SELECT scripts.JSTypeHow, COUNT(DISTINCT pages.website_id) AS count
+FROM scripts
+JOIN pages ON scripts.page_id = pages.id
+GROUP BY scripts.JSTypeHow
+ORDER BY count DESC;
+
+SELECT COUNT(DISTINCT pages.website_id)
+FROM scripts
+JOIN pages ON scripts.page_id = pages.id
+JOIN websites ON pages.website_id = websites.id
+WHERE scripts.Library LIKE '%webpack%' AND websites.id IN (SELECT id FROM websites LIMIT 100);
+
+SELECT COUNT(DISTINCT pages.website_id)
+FROM scripts
+JOIN pages ON scripts.page_id = pages.id
+JOIN websites ON pages.website_id = websites.id
+WHERE scripts.Library IN ('jQuery', 'Dojo', 'D3', 'Pixi', 'Three', 'Velocity', 'React', 'Vue', 'Ember', 'Angular')
+AND websites.id IN (SELECT id FROM websites LIMIT 100);
+
+SELECT scripts.Library, COUNT(DISTINCT pages.website_id) AS count
+FROM scripts
+JOIN pages ON scripts.page_id = pages.id
+JOIN websites ON pages.website_id = websites.id
+WHERE websites.id IN (SELECT id FROM websites LIMIT 100)
+GROUP BY scripts.Library
+ORDER BY count DESC
+LIMIT 1;
+
+SELECT 
+  COUNT(DISTINCT pages.website_id) FILTER (WHERE JSLibraryVersionVulnerabilities.critical_vulnerabilities &gt; 0) as critical,
+  COUNT(DISTINCT pages.website_id) FILTER (WHERE JSLibraryVersionVulnerabilities.high_vulnerabilities &gt; 0) as high,
+  COUNT(DISTINCT pages.website_id) FILTER (WHERE JSLibraryVersionVulnerabilities.medium_vulnerabilities &gt; 0) as medium,
+  COUNT(DISTINCT pages.website_id) FILTER (WHERE JSLibraryVersionVulnerabilities.low_vulnerabilities &gt; 0) as low
+FROM JSLibraryVersionVulnerabilities
+JOIN scripts ON scripts.Library = JSLibraryVersionVulnerabilities.library_name AND scripts.version = JSLibraryVersionVulnerabilities.version
+JOIN pages ON scripts.page_id = pages.id
+JOIN websites ON pages.website_id = websites.id
+WHERE websites.id IN (SELECT id FROM websites ORDER BY id LIMIT 100);
+
+SELECT scripts.JSTypeWhere, COUNT(DISTINCT pages.website_id) AS count
+FROM scripts
+JOIN pages ON scripts.page_id = pages.id
+JOIN websites ON pages.website_id = websites.id
+WHERE websites.id IN (SELECT id FROM websites ORDER BY id LIMIT 100)
+GROUP BY scripts.JSTypeWhere
+ORDER BY count DESC;
+
+</sql><sql name="SQL 4">--Number of Websites Using Webpack
+SELECT COUNT(DISTINCT pages.website_id)
+FROM scripts
+JOIN pages ON scripts.page_id = pages.id
+WHERE scripts.Library LIKE '%webpack%';
+
+--Number of Websites Using One of the 10 JavaScript Libraries
+SELECT COUNT(DISTINCT pages.website_id)
+FROM scripts
+JOIN pages ON scripts.page_id = pages.id
+WHERE scripts.Library IN (SELECT DISTINCT Library from scripts where Library not like 'webpack');
+
+--Most Used Library
+SELECT scripts.Library, COUNT(DISTINCT pages.website_id) AS count
+FROM scripts
+JOIN pages ON scripts.page_id = pages.id
+GROUP BY scripts.Library
+ORDER BY count DESC
+LIMIT 1;
+
+-- Number of Vulnerable Websites and Level of Vulnerability
+SELECT 
+  COUNT(DISTINCT pages.website_id) FILTER (WHERE JSLibraryVersionVulnerabilities.critical_vulnerabilities &gt; 0) as critical,
+  COUNT(DISTINCT pages.website_id) FILTER (WHERE JSLibraryVersionVulnerabilities.high_vulnerabilities &gt; 0) as high,
+  COUNT(DISTINCT pages.website_id) FILTER (WHERE JSLibraryVersionVulnerabilities.medium_vulnerabilities &gt; 0) as medium,
+  COUNT(DISTINCT pages.website_id) FILTER (WHERE JSLibraryVersionVulnerabilities.low_vulnerabilities &gt; 0) as low
+FROM JSLibraryVersionVulnerabilities
+JOIN scripts ON scripts.Library = JSLibraryVersionVulnerabilities.library_name AND scripts.version = JSLibraryVersionVulnerabilities.version
+JOIN pages ON scripts.page_id = pages.id;
+
+--Best Detection Method
+SELECT scripts.JSTypeHow, COUNT(DISTINCT pages.website_id) AS count
+FROM scripts
+JOIN pages ON scripts.page_id = pages.id
+GROUP BY scripts.JSTypeHow
+ORDER BY count DESC;
+
+BEGIN TRANSACTION;
+
+UPDATE scripts
+SET Library = 
+    CASE
+        WHEN LOWER(Library) LIKE 'jquery%' THEN 'jquery'
+        WHEN LOWER(Library) LIKE 'webpack%' THEN 'webpack'
+        WHEN LOWER(Library) LIKE 'react%' THEN 'react'
+        WHEN LOWER(Library) LIKE 'angular%' THEN 'angular'
+        WHEN LOWER(Library) LIKE 'vue%' THEN 'vue'
+        WHEN LOWER(Library) LIKE 'd3%' THEN 'd3'
+        WHEN LOWER(Library) LIKE 'dojo%' THEN 'dojo'
+        WHEN LOWER(Library) LIKE 'velocity%' THEN 'velocity'
+        WHEN LOWER(Library) LIKE 'three%' THEN 'three'
+        WHEN LOWER(Library) LIKE 'ember%' THEN 'ember'
+        -- Add more conditions for other libraries as needed
+        ELSE Library
+    END
+WHERE Library IS NOT NULL AND Library &lt;&gt; '';
+
+COMMIT;
+
+select DISTINCT Library from scripts
+
+</sql><current_tab id="2"/></tab_sql></sqlb_project>
